@@ -139,10 +139,10 @@ App 开始同步，或展示可恢复错误。
 
 | 环境 | 状态 |
 |---|---|
-| macOS Bash/Zsh | 支持目标 |
-| Linux Bash | 支持目标 |
-| Windows Git Bash / MSYS2 / Cygwin | 支持目标 |
-| WSL | 支持目标 |
+| macOS Bash/Zsh | v0.1.0 已本地测试通过 |
+| Linux Bash | 支持目标，v0.1.0 尚未手动测试 |
+| Windows Git Bash / MSYS2 / Cygwin | 支持目标，v0.1.0 尚未手动测试 |
+| WSL | 支持目标，v0.1.0 尚未手动测试 |
 | 原生 PowerShell | v0.1.0 暂不支持 |
 
 最低依赖：
@@ -156,7 +156,7 @@ App 开始同步，或展示可恢复错误。
 
 ## 安装
 
-将 `scripts/droidlens/` 添加到 Android 项目中：
+DroidLens 设计为从 Android 项目根目录运行。默认且推荐的目录结构是：
 
 ```text
 scripts/droidlens/
@@ -167,6 +167,22 @@ scripts/droidlens/
   docs/
   flows/
 ```
+
+这个独立仓库可以放在任意位置，作为上游源码仓库。真正使用时，把 `scripts/droidlens/` 复制或引入到目标 Android 应用仓库的 `scripts/droidlens/` 路径，然后从 Android 项目根目录运行。
+
+推荐方式：
+
+- 直接复制 `scripts/droidlens/` 到 Android 项目。
+- 作为 Git submodule 放在 `scripts/droidlens/`。
+- 作为 Git subtree 引入，并保持 `scripts/droidlens/` 路径。
+
+内置 Claude 和 Codex skills 默认使用这个相对路径：
+
+```bash
+scripts/droidlens/droidlens
+```
+
+如果你把 DroidLens 放在其它位置，需要在项目里创建 `scripts/droidlens/` 软链接，或调整该项目中的 skill/agent 说明。
 
 在 Claude Code / Codex 中使用时，AI 应该自动完成初始化。手动验证可以在项目根目录运行：
 
@@ -181,6 +197,29 @@ scripts/droidlens/droidlens doctor --ensure --json
 ```bash
 scripts/droidlens/droidlens doctor --ensure --install-missing
 ```
+
+## Skill 设置
+
+DroidLens 自带 AI 代理 skill 模板：
+
+```text
+.claude/skills/droidlens/
+.codex/skills/droidlens/
+```
+
+在 Android 项目中启用：
+
+1. 把 `scripts/droidlens/` 复制到 Android 项目根目录。
+2. 使用 Claude Code 时，把 `.claude/skills/droidlens/` 复制到 Android 项目的 `.claude/skills/droidlens/`。
+3. 使用 Codex 时，把 `.codex/skills/droidlens/` 复制到 Android 项目的 `.codex/skills/droidlens/`。
+4. 从 Android 项目根目录打开 Claude Code 或 Codex。
+5. 直接用自然语言描述 UI 任务，例如：
+
+```text
+使用 DroidLens 检查当前 App UI，并用证据报告 UX 问题。
+```
+
+skill 会告诉 AI 使用 `scripts/droidlens/droidlens`，先执行环境检查，优先使用 XML/summary，避免写死坐标，并只在必要时请求有限范围的危险操作授权。
 
 ## 自然语言使用
 
@@ -443,4 +482,4 @@ tests/droidlens/run.sh
 
 DroidLens 使用 [Apache License 2.0](LICENSE) 发布。
 
-Copyright 2026 DroidLens contributors.
+Copyright 2026 Guangsen Wang.

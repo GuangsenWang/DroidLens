@@ -139,10 +139,10 @@ Inspect the dialog XML and update the flow selector to the current text or conte
 
 | Environment | Status |
 |---|---|
-| macOS Bash/Zsh | Supported target |
-| Linux Bash | Supported target |
-| Windows Git Bash / MSYS2 / Cygwin | Supported target |
-| WSL | Supported target |
+| macOS Bash/Zsh | Tested locally for v0.1.0 |
+| Linux Bash | Supported target, not manually tested for v0.1.0 |
+| Windows Git Bash / MSYS2 / Cygwin | Supported target, not manually tested for v0.1.0 |
+| WSL | Supported target, not manually tested for v0.1.0 |
 | Native PowerShell | Not supported in v0.1.0 |
 
 Minimum requirements:
@@ -156,7 +156,7 @@ Minimum requirements:
 
 ## Install
 
-Add `scripts/droidlens/` to an Android project:
+DroidLens is designed to run from an Android project root. The default and recommended layout is:
 
 ```text
 scripts/droidlens/
@@ -167,6 +167,22 @@ scripts/droidlens/
   docs/
   flows/
 ```
+
+This repository can live anywhere as the upstream source. To use DroidLens in an Android app repository, copy or vendor `scripts/droidlens/` into that app repository at `scripts/droidlens/`, then run commands from the Android project root.
+
+Recommended options:
+
+- Copy `scripts/droidlens/` directly into the Android project.
+- Add this repository as a Git submodule at `scripts/droidlens/`.
+- Add this repository as a subtree and keep the `scripts/droidlens/` path.
+
+The built-in Claude and Codex skills assume this relative path:
+
+```bash
+scripts/droidlens/droidlens
+```
+
+If you place DroidLens somewhere else, create a symlink at `scripts/droidlens/` or adjust the skill/agent instructions in your project.
 
 For Claude Code / Codex usage, the agent should run setup automatically. For manual verification from the project root:
 
@@ -181,6 +197,29 @@ If a required tool is missing:
 ```bash
 scripts/droidlens/droidlens doctor --ensure --install-missing
 ```
+
+## Skill Setup
+
+DroidLens ships with agent skill templates:
+
+```text
+.claude/skills/droidlens/
+.codex/skills/droidlens/
+```
+
+To enable them in an Android project:
+
+1. Copy `scripts/droidlens/` into the Android project root.
+2. Copy `.claude/skills/droidlens/` into the Android project's `.claude/skills/droidlens/` directory when using Claude Code.
+3. Copy `.codex/skills/droidlens/` into the Android project's `.codex/skills/droidlens/` directory when using Codex.
+4. Open Claude Code or Codex from the Android project root.
+5. Ask for the UI outcome in natural language, for example:
+
+```text
+Use DroidLens to inspect the current app UI and report UX issues with evidence.
+```
+
+The skill tells the agent to use `scripts/droidlens/droidlens`, run preflight, prefer XML/summary before screenshots, avoid hardcoded coordinates, and ask only for bounded dangerous-action approval when needed.
 
 ## Natural-Language Usage
 
@@ -443,4 +482,4 @@ The test suite uses fake ADB where possible and does not require a physical devi
 
 DroidLens is licensed under the [Apache License 2.0](LICENSE).
 
-Copyright 2026 DroidLens contributors.
+Copyright 2026 Guangsen Wang.

@@ -20,10 +20,10 @@
 
 | Platform | Status |
 |---|---|
-| macOS Bash/Zsh | Supported target |
-| Linux Bash | Supported target |
-| Windows Git Bash / MSYS2 / Cygwin | Supported target |
-| WSL | Supported target |
+| macOS Bash/Zsh | Tested locally |
+| Linux Bash | Supported target, not manually tested |
+| Windows Git Bash / MSYS2 / Cygwin | Supported target, not manually tested |
+| WSL | Supported target, not manually tested |
 | Native PowerShell | Not supported in v0.1.0 |
 
 ## Known Limits
