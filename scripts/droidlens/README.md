@@ -176,13 +176,52 @@ Recommended options:
 - Add this repository as a Git submodule at `scripts/droidlens/`.
 - Add this repository as a subtree and keep the `scripts/droidlens/` path.
 
+Submodule install:
+
+```bash
+git submodule add https://github.com/GuangsenWang/DroidLens.git tools/DroidLens
+git commit -m "Add DroidLens submodule"
+```
+
+When DroidLens is installed as a submodule at `tools/DroidLens`, use this command path:
+
+```bash
+tools/DroidLens/scripts/droidlens/droidlens doctor --ensure --json
+```
+
+For a fresh clone of the Android project:
+
+```bash
+git submodule update --init --recursive
+```
+
+To update the pinned DroidLens revision:
+
+```bash
+git submodule update --remote tools/DroidLens
+git add tools/DroidLens
+git commit -m "Update DroidLens"
+```
+
+Subtree install:
+
+```bash
+git subtree add --prefix=tools/DroidLens https://github.com/GuangsenWang/DroidLens.git main --squash
+```
+
+To update a subtree install:
+
+```bash
+git subtree pull --prefix=tools/DroidLens https://github.com/GuangsenWang/DroidLens.git main --squash
+```
+
 The built-in Claude and Codex skills assume this relative path:
 
 ```bash
 scripts/droidlens/droidlens
 ```
 
-If you place DroidLens somewhere else, create a symlink at `scripts/droidlens/` or adjust the skill/agent instructions in your project.
+If you place DroidLens somewhere else, such as `tools/DroidLens`, create a symlink at `scripts/droidlens/` or adjust the skill/agent instructions in your project.
 
 For Claude Code / Codex usage, the agent should run setup automatically. For manual verification from the project root:
 
@@ -289,7 +328,7 @@ scripts/droidlens/          reusable DroidLens engine
 ~/.droidlens/page-tree.json user route memory across sessions
 ```
 
-See [docs/schema.md](docs/schema.md) for data formats.
+See [scripts/droidlens/docs/schema.md](scripts/droidlens/docs/schema.md) for data formats.
 
 ## Command Reference
 
@@ -407,7 +446,7 @@ scripts/droidlens/droidlens adb start-app --app auto --fresh --json
 scripts/droidlens/droidlens adb force-stop --app auto --json
 ```
 
-See [docs/ai-adb.md](docs/ai-adb.md) for the ADB safety boundary.
+See [scripts/droidlens/docs/ai-adb.md](scripts/droidlens/docs/ai-adb.md) for the ADB safety boundary.
 
 ## Environment Variables
 

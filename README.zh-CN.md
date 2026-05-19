@@ -176,13 +176,52 @@ scripts/droidlens/
 - 作为 Git submodule 放在 `scripts/droidlens/`。
 - 作为 Git subtree 引入，并保持 `scripts/droidlens/` 路径。
 
+submodule 安装：
+
+```bash
+git submodule add https://github.com/GuangsenWang/DroidLens.git tools/DroidLens
+git commit -m "Add DroidLens submodule"
+```
+
+当 DroidLens 作为 submodule 放在 `tools/DroidLens` 时，命令路径是：
+
+```bash
+tools/DroidLens/scripts/droidlens/droidlens doctor --ensure --json
+```
+
+新 clone Android 项目后，需要初始化 submodule：
+
+```bash
+git submodule update --init --recursive
+```
+
+更新 DroidLens 指向的版本：
+
+```bash
+git submodule update --remote tools/DroidLens
+git add tools/DroidLens
+git commit -m "Update DroidLens"
+```
+
+subtree 安装：
+
+```bash
+git subtree add --prefix=tools/DroidLens https://github.com/GuangsenWang/DroidLens.git main --squash
+```
+
+更新 subtree：
+
+```bash
+git subtree pull --prefix=tools/DroidLens https://github.com/GuangsenWang/DroidLens.git main --squash
+```
+
 内置 Claude 和 Codex skills 默认使用这个相对路径：
 
 ```bash
 scripts/droidlens/droidlens
 ```
 
-如果你把 DroidLens 放在其它位置，需要在项目里创建 `scripts/droidlens/` 软链接，或调整该项目中的 skill/agent 说明。
+如果你把 DroidLens 放在其它位置，例如 `tools/DroidLens`，需要在项目里创建 `scripts/droidlens/` 软链接，或调整该项目中的 skill/agent 说明。
 
 在 Claude Code / Codex 中使用时，AI 应该自动完成初始化。手动验证可以在项目根目录运行：
 
