@@ -14,7 +14,7 @@ Run the UI regression. It may reset local test data if needed.
 Reproduce why this button does not respond.
 ```
 
-The command reference below is intended for maintainers, integrations, CI, and advanced troubleshooting.
+The command reference below is intended for maintainers, integrations, CI, and advanced troubleshooting. Normal usage should not require developers to run DroidLens commands manually.
 
 ## Quick Start
 
@@ -28,7 +28,7 @@ Use DroidLens to reproduce the login button issue and collect evidence.
 
 The agent should run preflight, resolve the app, inspect the device, navigate, collect screenshots/XML when needed, and report findings. Developers should not need to memorize DroidLens commands.
 
-For manual smoke testing from the project root:
+Optional: to verify that DroidLens is wired into the project, run a manual smoke test from the project root:
 
 ```bash
 scripts/droidlens/droidlens doctor --ensure --json
@@ -191,7 +191,7 @@ scripts/droidlens/droidlens
 
 Keep this path stable. If you install DroidLens somewhere else, update the project skills and any saved flow documentation before using it.
 
-For Claude Code / Codex usage, the agent should run setup automatically. For manual verification from the project root:
+For Claude Code / Codex usage, the agent should run setup automatically. The command below is only for optional post-install verification or troubleshooting:
 
 ```bash
 scripts/droidlens/droidlens doctor --ensure --json
