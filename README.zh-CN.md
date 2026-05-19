@@ -168,7 +168,7 @@ scripts/droidlens/
   flows/
 ```
 
-这个独立仓库可以放在任意位置，作为上游源码仓库。真正使用时，把 `scripts/droidlens/` 复制或引入到目标 Android 应用仓库的 `scripts/droidlens/` 路径，然后从 Android 项目根目录运行。
+这个独立仓库可以放在任意位置，作为上游源码仓库。真正使用时，需要在目标 Android 应用仓库中把可复用脚本目录暴露为 `scripts/droidlens/`，然后从 Android 项目根目录运行。
 
 把 DroidLens 安装到 Android 项目的这个路径：
 
@@ -176,12 +176,50 @@ scripts/droidlens/
 scripts/droidlens/
 ```
 
-推荐安装方式：
+### 方式 A：复制脚本
+
+如果只想把某个版本固定到一个 Android 项目里，这是最简单的方式：
 
 ```bash
 mkdir -p scripts
 cp -R /path/to/DroidLens/scripts/droidlens scripts/droidlens
 ```
+
+### 方式 B：使用 Git submodule
+
+如果希望 Android 项目持续跟踪 DroidLens 上游仓库，可以使用 Git submodule：
+
+```bash
+git submodule add https://github.com/GuangsenWang/DroidLens.git third_party/DroidLens
+mkdir -p scripts
+ln -s ../third_party/DroidLens/scripts/droidlens scripts/droidlens
+git add .gitmodules third_party/DroidLens scripts/droidlens
+git commit -m "Add DroidLens"
+```
+
+之后克隆 Android 项目时带上 submodule：
+
+```bash
+git clone --recurse-submodules <your-android-project>
+```
+
+如果已经克隆了项目，可以再初始化 submodule：
+
+```bash
+git submodule update --init --recursive
+```
+
+后续更新 DroidLens：
+
+```bash
+git submodule update --remote third_party/DroidLens
+git add third_party/DroidLens
+git commit -m "Update DroidLens"
+```
+
+submodule 应该保留完整 DroidLens 仓库。运行入口仍然保持为 `scripts/droidlens/`。不要把完整 DroidLens 仓库直接作为 submodule 放到 `scripts/droidlens`，否则命令路径会变成嵌套结构。
+
+在 Windows 上创建 symlink 可能需要开启 Developer Mode 或管理员权限。如果不能使用 symlink，可以把 submodule 放在 `third_party/DroidLens`，每次更新后再把 `third_party/DroidLens/scripts/droidlens` 复制到 `scripts/droidlens`。
 
 Claude 和 Codex skills、命令示例、脚本文档都默认使用这个相对路径：
 

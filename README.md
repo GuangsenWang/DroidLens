@@ -168,7 +168,7 @@ scripts/droidlens/
   flows/
 ```
 
-This repository can live anywhere as the upstream source. To use DroidLens in an Android app repository, copy or vendor `scripts/droidlens/` into that app repository at `scripts/droidlens/`, then run commands from the Android project root.
+This repository can live anywhere as the upstream source. To use DroidLens in an Android app repository, expose the reusable script directory at `scripts/droidlens/`, then run commands from the Android project root.
 
 Install DroidLens into an Android project at this path:
 
@@ -176,12 +176,50 @@ Install DroidLens into an Android project at this path:
 scripts/droidlens/
 ```
 
-Recommended install:
+### Option A: copy the scripts
+
+This is the simplest setup when you want to vendor a snapshot into one Android project:
 
 ```bash
 mkdir -p scripts
 cp -R /path/to/DroidLens/scripts/droidlens scripts/droidlens
 ```
+
+### Option B: use a Git submodule
+
+Use this when you want the Android project to track DroidLens as an upstream dependency:
+
+```bash
+git submodule add https://github.com/GuangsenWang/DroidLens.git third_party/DroidLens
+mkdir -p scripts
+ln -s ../third_party/DroidLens/scripts/droidlens scripts/droidlens
+git add .gitmodules third_party/DroidLens scripts/droidlens
+git commit -m "Add DroidLens"
+```
+
+Then clone the Android project with submodules:
+
+```bash
+git clone --recurse-submodules <your-android-project>
+```
+
+Or initialize submodules after cloning:
+
+```bash
+git submodule update --init --recursive
+```
+
+To update DroidLens later:
+
+```bash
+git submodule update --remote third_party/DroidLens
+git add third_party/DroidLens
+git commit -m "Update DroidLens"
+```
+
+The submodule should contain the full DroidLens repository. Keep the runtime entry exposed at `scripts/droidlens/`; do not add the full repository directly at `scripts/droidlens`, or the command path becomes nested.
+
+On Windows, symlink creation may require Developer Mode or administrator privileges. If symlinks are unavailable, keep the submodule under `third_party/DroidLens` and copy `third_party/DroidLens/scripts/droidlens` into `scripts/droidlens` when updating.
 
 The Claude and Codex skills, command examples, and script documentation all assume this relative path:
 
