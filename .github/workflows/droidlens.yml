@@ -1,0 +1,65 @@
+name: DroidLens
+
+on:
+  push:
+    paths:
+      - "scripts/droidlens/**"
+      - "tests/droidlens/**"
+      - ".github/workflows/droidlens.yml"
+  pull_request:
+    paths:
+      - "scripts/droidlens/**"
+      - "tests/droidlens/**"
+      - ".github/workflows/droidlens.yml"
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install ShellCheck
+        run: |
+          case "$RUNNER_OS" in
+            Linux)
+              sudo apt-get update
+              sudo apt-get install -y shellcheck
+              ;;
+            macOS)
+              brew install shellcheck
+              ;;
+            Windows)
+              choco install shellcheck -y
+              ;;
+          esac
+
+      - name: Shell syntax
+        run: |
+          bash -n scripts/droidlens/*.sh scripts/droidlens/droidlens tests/droidlens/run.sh
+
+      - name: ShellCheck
+        run: |
+          shellcheck -x -P scripts/droidlens scripts/droidlens/*.sh scripts/droidlens/droidlens tests/droidlens/run.sh
+
+      - name: Python compile
+        run: |
+          python3 -m py_compile scripts/droidlens/*.py
+
+      - name: Unit tests
+        run: |
+          tests/droidlens/run.sh

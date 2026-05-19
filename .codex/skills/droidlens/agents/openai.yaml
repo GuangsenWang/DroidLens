@@ -1,0 +1,4 @@
+interface:
+  display_name: "DroidLens"
+  short_description: "Android UI inspection for AI agents"
+  default_prompt: "Use $droidlens to inspect the connected Android app UI and summarize any issues with evidence."

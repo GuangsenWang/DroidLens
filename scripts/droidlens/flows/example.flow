@@ -1,0 +1,9 @@
+# Generic droidlens flow template.
+# Copy this file to <project>/.droidlens/flows/ and replace selectors with app-specific memory.
+
+launch auto
+wait-text "Expected landing text" 10
+tap-desc "Navigation item"
+wait-text "Destination" 10
+snap
+note Replace this template with project-specific selectors

@@ -1,0 +1,101 @@
+#!/usr/bin/env bash
+# Unified DroidLens CLI. Keeps individual script entrypoints stable while giving
+# humans and agents one command surface.
+set -euo pipefail
+
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+usage() {
+    cat <<'EOF'
+Usage:
+  droidlens doctor [args...]
+  droidlens app resolve|launch [args...]
+  droidlens snap OUT [--thumb|--ai|--png|--raw] [--json]
+  droidlens dump STEM [--thumb|--ai|--png|--raw] [--json]
+  droidlens tap [args...]
+  droidlens observe [args...]
+  droidlens goto [args...]
+  droidlens learn [args...]
+  droidlens policy grant|list|revoke|check|audit [args...]
+  droidlens flow [args...]
+  droidlens whereami
+  droidlens summary [XML]
+  droidlens adb COMMAND [args...]
+
+Safe adb commands:
+  devices
+  current
+  wm
+  density
+  wake
+  back
+  home
+  key KEYCODE_NAME
+  text TEXT
+  tap PCT_X PCT_Y
+  swipe FROM_X FROM_Y TO_X TO_Y [MS]
+
+Managed adb commands:
+  install-apk PATH.apk [--downgrade] [--grant] [--json]
+  start-app --app auto [--fresh] [--json]
+  force-stop --app auto [--json]
+
+Dangerous adb commands:
+  clear-app-data --app auto [--json]  # requires policy grant
+  uninstall --app auto [--json]  # requires policy grant
+EOF
+}
+
+cmd="${1:-}"
+[[ -n "$cmd" ]] || { usage; exit 2; }
+shift || true
+
+case "$cmd" in
+    -h|--help|help)
+        usage
+        ;;
+    doctor)
+        exec "$HERE/doctor.sh" "$@"
+        ;;
+    app)
+        exec "$HERE/app.sh" "$@"
+        ;;
+    snap)
+        exec "$HERE/snap.sh" "$@"
+        ;;
+    dump)
+        exec "$HERE/dump.sh" "$@"
+        ;;
+    tap)
+        exec "$HERE/tap.sh" "$@"
+        ;;
+    observe)
+        exec "$HERE/observe.sh" "$@"
+        ;;
+    goto)
+        exec "$HERE/goto.sh" "$@"
+        ;;
+    learn)
+        exec "$HERE/learn.sh" "$@"
+        ;;
+    policy)
+        exec "$HERE/policy.sh" "$@"
+        ;;
+    flow)
+        exec "$HERE/flow.sh" "$@"
+        ;;
+    whereami)
+        exec "$HERE/whereami.sh" "$@"
+        ;;
+    summary)
+        exec "$HERE/summary.sh" "$@"
+        ;;
+    adb|device)
+        exec "$HERE/adbctl.sh" "$@"
+        ;;
+    *)
+        printf '[droidlens] ERROR: unknown command: %s\n' "$cmd" >&2
+        usage >&2
+        exit 2
+        ;;
+esac
