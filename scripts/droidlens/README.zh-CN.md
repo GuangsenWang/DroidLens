@@ -170,58 +170,26 @@ scripts/droidlens/
 
 这个独立仓库可以放在任意位置，作为上游源码仓库。真正使用时，把 `scripts/droidlens/` 复制或引入到目标 Android 应用仓库的 `scripts/droidlens/` 路径，然后从 Android 项目根目录运行。
 
-推荐方式：
+把 DroidLens 安装到 Android 项目的这个路径：
 
-- 直接复制 `scripts/droidlens/` 到 Android 项目。
-- 作为 Git submodule 放在 `scripts/droidlens/`。
-- 作为 Git subtree 引入，并保持 `scripts/droidlens/` 路径。
-
-submodule 安装：
-
-```bash
-git submodule add https://github.com/GuangsenWang/DroidLens.git tools/DroidLens
-git commit -m "Add DroidLens submodule"
+```text
+scripts/droidlens/
 ```
 
-当 DroidLens 作为 submodule 放在 `tools/DroidLens` 时，命令路径是：
+推荐安装方式：
 
 ```bash
-tools/DroidLens/scripts/droidlens/droidlens doctor --ensure --json
+mkdir -p scripts
+cp -R /path/to/DroidLens/scripts/droidlens scripts/droidlens
 ```
 
-新 clone Android 项目后，需要初始化 submodule：
-
-```bash
-git submodule update --init --recursive
-```
-
-更新 DroidLens 指向的版本：
-
-```bash
-git submodule update --remote tools/DroidLens
-git add tools/DroidLens
-git commit -m "Update DroidLens"
-```
-
-subtree 安装：
-
-```bash
-git subtree add --prefix=tools/DroidLens https://github.com/GuangsenWang/DroidLens.git main --squash
-```
-
-更新 subtree：
-
-```bash
-git subtree pull --prefix=tools/DroidLens https://github.com/GuangsenWang/DroidLens.git main --squash
-```
-
-内置 Claude 和 Codex skills 默认使用这个相对路径：
+Claude 和 Codex skills、命令示例、脚本文档都默认使用这个相对路径：
 
 ```bash
 scripts/droidlens/droidlens
 ```
 
-如果你把 DroidLens 放在其它位置，例如 `tools/DroidLens`，需要在项目里创建 `scripts/droidlens/` 软链接，或调整该项目中的 skill/agent 说明。
+请保持这个路径稳定。如果安装到其它位置，需要先更新项目里的 skills 和已保存的流程文档，再开始使用。
 
 在 Claude Code / Codex 中使用时，AI 应该自动完成初始化。手动验证可以在项目根目录运行：
 

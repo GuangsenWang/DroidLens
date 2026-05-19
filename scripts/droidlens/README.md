@@ -170,58 +170,26 @@ scripts/droidlens/
 
 This repository can live anywhere as the upstream source. To use DroidLens in an Android app repository, copy or vendor `scripts/droidlens/` into that app repository at `scripts/droidlens/`, then run commands from the Android project root.
 
-Recommended options:
+Install DroidLens into an Android project at this path:
 
-- Copy `scripts/droidlens/` directly into the Android project.
-- Add this repository as a Git submodule at `scripts/droidlens/`.
-- Add this repository as a subtree and keep the `scripts/droidlens/` path.
-
-Submodule install:
-
-```bash
-git submodule add https://github.com/GuangsenWang/DroidLens.git tools/DroidLens
-git commit -m "Add DroidLens submodule"
+```text
+scripts/droidlens/
 ```
 
-When DroidLens is installed as a submodule at `tools/DroidLens`, use this command path:
+Recommended install:
 
 ```bash
-tools/DroidLens/scripts/droidlens/droidlens doctor --ensure --json
+mkdir -p scripts
+cp -R /path/to/DroidLens/scripts/droidlens scripts/droidlens
 ```
 
-For a fresh clone of the Android project:
-
-```bash
-git submodule update --init --recursive
-```
-
-To update the pinned DroidLens revision:
-
-```bash
-git submodule update --remote tools/DroidLens
-git add tools/DroidLens
-git commit -m "Update DroidLens"
-```
-
-Subtree install:
-
-```bash
-git subtree add --prefix=tools/DroidLens https://github.com/GuangsenWang/DroidLens.git main --squash
-```
-
-To update a subtree install:
-
-```bash
-git subtree pull --prefix=tools/DroidLens https://github.com/GuangsenWang/DroidLens.git main --squash
-```
-
-The built-in Claude and Codex skills assume this relative path:
+The Claude and Codex skills, command examples, and script documentation all assume this relative path:
 
 ```bash
 scripts/droidlens/droidlens
 ```
 
-If you place DroidLens somewhere else, such as `tools/DroidLens`, create a symlink at `scripts/droidlens/` or adjust the skill/agent instructions in your project.
+Keep this path stable. If you install DroidLens somewhere else, update the project skills and any saved flow documentation before using it.
 
 For Claude Code / Codex usage, the agent should run setup automatically. For manual verification from the project root:
 
