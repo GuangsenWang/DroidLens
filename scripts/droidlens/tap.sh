@@ -116,7 +116,7 @@ if [[ -n "$META" ]]; then
     fi
     DEV_W="$(wm_width)"
     DEV_H="$(wm_height)"
-    if ! MAPPED="$(python3 - "$META" "$IMG_X" "$IMG_Y" "$DEV_W" "$DEV_H" 2>&1 <<'PY'
+    if ! MAPPED="$(py - "$META" "$IMG_X" "$IMG_Y" "$DEV_W" "$DEV_H" 2>&1 <<'PY'
 import json
 import sys
 
@@ -200,7 +200,7 @@ fi
 FIND_ARGS=(find "$XML" --by "$BY" --value "$QUERY" --match "$MATCH" --nth "$NTH")
 [[ -n "$CLICKABLE" ]] && FIND_ARGS+=(--clickable "$CLICKABLE")
 [[ -n "$ENABLED" ]] && FIND_ARGS+=(--enabled "$ENABLED")
-if ! PICKED="$(python3 "$HERE/uixml.py" "${FIND_ARGS[@]}")"; then
+if ! PICKED="$(py "$HERE/uixml.py" "${FIND_ARGS[@]}")"; then
     fail "tap_target_not_found" "no matching element found: by=$BY match=$MATCH query='$QUERY' nth=$NTH"
 fi
 IFS=$'\t' read -r CX CY TOTAL X1 Y1 X2 Y2 <<< "$PICKED"

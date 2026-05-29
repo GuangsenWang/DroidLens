@@ -1,0 +1,7 @@
+# DroidLens is a cross-platform ADB toolkit (macOS / Linux / Windows Git Bash).
+# Shell and Python sources MUST use LF on every platform: CRLF breaks bash shebangs
+# (`#!/usr/bin/env bash\r` → "bash\r: not found") and taints parsing in Git Bash, and
+# would also break on macOS/Linux. Enforce LF regardless of core.autocrlf.
+*.sh  text eol=lf
+*.py  text eol=lf
+*.bash text eol=lf

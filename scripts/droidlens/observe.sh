@@ -44,7 +44,7 @@ texts_json="[]"
 WHEREAMI_OUTPUT="$(DROIDLENS_STORE="$STORE" "$HERE/whereami.sh")"
 eval "$WHEREAMI_OUTPUT"
 
-read -r HAS_PERMISSION_TEXT HAS_CRASH_TEXT HAS_SYSTEM_OVERLAY_TEXT < <(python3 - "${texts_json:-[]}" <<'PY'
+read -r HAS_PERMISSION_TEXT HAS_CRASH_TEXT HAS_SYSTEM_OVERLAY_TEXT < <(py - "${texts_json:-[]}" <<'PY'
 import json
 import sys
 
@@ -149,7 +149,7 @@ else
     REASON="target app is foreground but page is unknown"
 fi
 
-python3 - "${package:-}" "${activity:-}" "${device_key:-}" "${page:-}" "${title:-}" "${fingerprint:-}" \
+py - "${package:-}" "${activity:-}" "${device_key:-}" "${page:-}" "${title:-}" "${fingerprint:-}" \
     "${match_kind:-none}" "${jaccard:-0.00}" "$TARGET_PKG" "$STATE" "$ACTION" "$REASON" "${texts_json:-[]}" <<'PY'
 import json, sys
 (

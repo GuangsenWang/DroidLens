@@ -38,7 +38,7 @@ case "${1:-}" in
     page-name|alias)
         whereami_now
         ALIAS="${2:?Usage: learn.sh page-name NAME}"
-        MERGED="$(python3 "$HERE/pagetree.py" alias-page "$STORE" "$device_key" "$ALIAS" "$page" "$fingerprint" "$activity" "$texts_json")"
+        MERGED="$(py "$HERE/pagetree.py" alias-page "$STORE" "$device_key" "$ALIAS" "$page" "$fingerprint" "$activity" "$texts_json")"
         printf '  merged %s old entries -> "%s"\n' "$MERGED" "$ALIAS" >&2
         printf 'learned: page-alias "%s" @ bucket "%s" (fingerprint=%s)\n' "$ALIAS" "$device_key" "$fingerprint"
         exit 0 ;;
@@ -83,11 +83,11 @@ esac
 if [[ "$LOOKUP_VIA" != "xy" ]]; then
     BY="$LOOKUP_VIA"
     [[ "$BY" == "desc" ]] && BY=desc
-    if ! PARSED="$(python3 "$HERE/uixml.py" find "$XML" --by "$BY" --value "$LOOKUP_VAL" --nth 1 --json)"; then
+    if ! PARSED="$(py "$HERE/uixml.py" find "$XML" --by "$BY" --value "$LOOKUP_VAL" --nth 1 --json)"; then
         die "did not find $LOOKUP_VIA=\"$LOOKUP_VAL\" on the current page"
     fi
     IFS=$'\t' read -r HIT_X HIT_Y TOTAL IN_SCROLLABLE <<< "$(
-        python3 - "$PARSED" <<'PY'
+        py - "$PARSED" <<'PY'
 import json
 import sys
 
@@ -111,7 +111,7 @@ TO_BUCKET="$device_key"
 
 # 6) Write page/button/edge in one transaction.
 BUTTON_KEY="${LOOKUP_VIA}:${LOOKUP_VAL:-${HIT_X},${HIT_Y}}"
-python3 "$HERE/pagetree.py" learn-transition \
+py "$HERE/pagetree.py" learn-transition \
     "$STORE" "$FROM_BUCKET" "$FROM_PAGE" "$TO_BUCKET" "$TO_PAGE" \
     "$BUTTON_KEY" "$HIT_X" "$HIT_Y" "$LOOKUP_VIA" "${LOOKUP_VAL:-}" "$IS_DYNAMIC"
 

@@ -158,7 +158,7 @@ case "$cmd" in
         ;;
     text)
         text="${1:?Usage: adbctl.sh text TEXT}"
-        escaped_text="$(python3 - "$text" <<'PY'
+        escaped_text="$(py - "$text" <<'PY'
 import sys
 
 value = sys.argv[1]

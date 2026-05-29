@@ -179,7 +179,7 @@ READY=false
 [[ "$ADB_OK" == true && "$PYTHON_OK" == true && "$DEVICE_OK" == true && "$CWEBP_OK" == true ]] && READY=true
 
 if [[ "$JSON" == "1" ]]; then
-    python3 - "$READY" "$ROOT" "$ENV_FILE" "$ADB_OK" "$ADB_PATH" "$ANDROID_HOME_FOUND" \
+    py - "$READY" "$ROOT" "$ENV_FILE" "$ADB_OK" "$ADB_PATH" "$ANDROID_HOME_FOUND" \
         "$PYTHON_OK" "$PYTHON_PATH" "$CWEBP_OK" "$CWEBP_PATH" "$PNGQUANT_OK" "$PNGQUANT_PATH" \
         "$DEVICE_OK" "$DEVICE_COUNT" "$SELECTED_SERIAL" "$STAYON_APPLIED" "$APP_OK" "$APP_JSON" <<'PY'
 import json

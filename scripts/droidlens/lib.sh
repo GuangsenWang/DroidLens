@@ -8,6 +8,13 @@
 #   - Cross-platform: macOS (zsh/bash) + Linux (bash) + WSL.
 set -euo pipefail
 
+# Force Python UTF-8 mode. On Windows, Python's stdio + default file encoding follow the
+# console/ANSI code page (e.g. cp936/cp1252), which mojibakes non-ASCII UI text (track
+# titles, CJK) when captured by the shell or persisted to page-tree.json. UTF-8 mode makes
+# stdin/stdout/stderr and implicit open() default to UTF-8 — matching macOS/Linux. No-op
+# where UTF-8 is already the default.
+export PYTHONUTF8=1
+
 DROIDLENS_LIB_HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 _droidlens_source_optional_env() {
@@ -83,15 +90,34 @@ adb_bin() {
 }
 
 # Wrapper: `adb` -> resolved binary, with -s $DROIDLENS_SERIAL when set.
+#
+# MSYS_NO_PATHCONV / MSYS2_ARG_CONV_EXCL: on Git Bash (MSYS2), Unix-looking absolute args
+# are rewritten to Windows paths before reaching adb.exe — corrupting DEVICE paths such as
+# /data/local/tmp/... and /sdcard/... (e.g. `uiautomator dump /data/...` silently lands at
+# C:/Program Files/Git/data/...). adb arguments in this toolkit are device paths or adb
+# flags, never host paths (host I/O is done via shell redirects), so disabling conversion
+# for adb is safe. These vars are ignored on macOS/Linux → no-op, fully cross-platform.
+# Scoped to the adb invocation only (prefix on an external command), so cwebp/pngquant host
+# paths elsewhere keep normal conversion.
 adb() {
     local bin
     bin="$(adb_bin)" || { echo "adb not found (set DROIDLENS_ADB / ANDROID_HOME)" >&2; return 127; }
     if [[ -n "${DROIDLENS_SERIAL:-}" ]]; then
-        "$bin" -s "$DROIDLENS_SERIAL" "$@"
+        MSYS_NO_PATHCONV=1 MSYS2_ARG_CONV_EXCL='*' "$bin" -s "$DROIDLENS_SERIAL" "$@"
     else
-        "$bin" "$@"
+        MSYS_NO_PATHCONV=1 MSYS2_ARG_CONV_EXCL='*' "$bin" "$@"
     fi
 }
+
+# ------------------------------------------------------------------ Python
+# Run python3 with CRLF→LF normalized stdout.
+# On Windows, Python's text-mode stdout translates "\n" → "\r\n"; bash command
+# substitution strips trailing "\n" but keeps the "\r", tainting every captured value
+# (numeric arithmetic, regex validation like wm_size, package names passed back to adb).
+# `tr -d '\r'` is a no-op on macOS/Linux (Python emits "\n" there), so this is safe
+# cross-platform. Use `py` for ALL python that produces text consumed by the shell.
+# Do NOT use it for run_with_timeout: that proxies arbitrary child stdout as binary.
+py() { command python3 "$@" | tr -d '\r'; }
 
 # ------------------------------------------------------------------ Device
 authorized_devices() {
@@ -149,7 +175,7 @@ droidlens_profile_file() {
 # Fall back to `wm size`; prefer override size when present.
 wm_size() {
     if [[ -z "${DROIDLENS_WM_SIZE:-}" ]]; then
-        DROIDLENS_WM_SIZE="$(adb shell dumpsys display 2>/dev/null | tr -d '\r' | python3 -c '
+        DROIDLENS_WM_SIZE="$(adb shell dumpsys display 2>/dev/null | tr -d '\r' | py -c '
 import re
 import sys
 
@@ -159,7 +185,7 @@ if match:
     print(f"{match.group(1)}x{match.group(2)}")
 ')"
         if [[ -z "$DROIDLENS_WM_SIZE" ]]; then
-            DROIDLENS_WM_SIZE="$(adb shell dumpsys window displays 2>/dev/null | tr -d '\r' | python3 -c '
+            DROIDLENS_WM_SIZE="$(adb shell dumpsys window displays 2>/dev/null | tr -d '\r' | py -c '
 import re
 import sys
 
@@ -205,7 +231,7 @@ _current_component() {
     {
         adb shell 'dumpsys activity activities' 2>/dev/null
         adb shell 'dumpsys window windows' 2>/dev/null
-    } | python3 -c '
+    } | py -c '
 import re, sys
 interesting = (
     "topResumedActivity=",
@@ -286,6 +312,11 @@ tap_xy_pct() {  # percentage (0-100)
 run_with_timeout() {
     local seconds="${1:?run_with_timeout SECONDS CMD...}"
     shift
+    # NOTE: raw `python3` (NOT the `py` CRLF-normalizing wrapper). This proxies arbitrary
+    # child stdout (e.g. `adb exec-out screencap -p`, `exec-out cat`) as BINARY via
+    # subprocess inheriting our stdout; piping it through `tr -d '\r'` would strip 0x0D
+    # bytes and corrupt PNGs. Python's own text-mode stdout is irrelevant here because the
+    # child writes directly to the inherited fd, not through sys.stdout.
     python3 - "$seconds" "$@" <<'PY'
 import subprocess
 import sys
@@ -325,16 +356,23 @@ adb_with_timeout() {
     local bin timeout
     timeout="${DROIDLENS_ADB_TIMEOUT:-15}"
     bin="$(adb_bin)" || return 127
-    if [[ -n "${DROIDLENS_SERIAL:-}" ]]; then
-        run_with_timeout "$timeout" "$bin" -s "$DROIDLENS_SERIAL" "$@"
-    else
-        run_with_timeout "$timeout" "$bin" "$@"
-    fi
+    # Same MSYS device-path concern as adb(): here adb runs via run_with_timeout's python
+    # subprocess, so the conversion happens at the bash→python3 launch. Scope the env vars
+    # in a subshell so they reach that python3 (and its adb child) without leaking to
+    # cwebp/pngquant host-path calls elsewhere. No-op on macOS/Linux.
+    (
+        export MSYS_NO_PATHCONV=1 MSYS2_ARG_CONV_EXCL='*'
+        if [[ -n "${DROIDLENS_SERIAL:-}" ]]; then
+            run_with_timeout "$timeout" "$bin" -s "$DROIDLENS_SERIAL" "$@"
+        else
+            run_with_timeout "$timeout" "$bin" "$@"
+        fi
+    )
 }
 
 ui_fingerprint_from_xml() {
     local xml="${1:?ui_fingerprint_from_xml FILE}"
-    python3 - "$xml" <<'PY'
+    py - "$xml" <<'PY'
 import hashlib
 import re
 import sys
@@ -368,7 +406,7 @@ wait_ui_stable() {
 is_dangerous_action_text() {
     local value="$1"
     [[ "${DROIDLENS_ALLOW_DANGEROUS:-0}" == "1" ]] && return 1
-    python3 - "$value" <<'PY'
+    py - "$value" <<'PY'
 import re
 import sys
 
@@ -390,20 +428,31 @@ have_cwebp()    { command -v cwebp    >/dev/null 2>&1; }
 
 dump_xml() {
     local out="${1:?dump_xml OUT.xml}"
-    local tag user remote
+    local tag user remote tries i
     user="${USER:-droidlens}"
-    tag="${user//[^A-Za-z0-9_.-]/_}.$$.$RANDOM"
-    remote="/data/local/tmp/droidlens-$tag.xml"
+    tries="${DROIDLENS_DUMP_RETRIES:-4}"
 
-    if ! adb_retry --tries "${DROIDLENS_ADB_RETRIES:-3}" shell uiautomator dump "$remote" >/dev/null; then
-        adb shell rm -f "$remote" >/dev/null 2>&1 || true
-        return 1
-    fi
-    if ! adb_retry --tries "${DROIDLENS_ADB_RETRIES:-3}" exec-out cat "$remote" > "$out"; then
-        adb shell rm -f "$remote" >/dev/null 2>&1 || true
-        return 1
-    fi
-    adb shell rm -f "$remote" >/dev/null 2>&1 || true
+    # uiautomator intermittently writes an empty / non-<hierarchy> file when the window is
+    # not idle or on Compose surfaces, yet still exits 0 — so adb_retry alone won't recover
+    # (the command "succeeded"). Validate the captured XML and retry the whole dump+cat.
+    # OS-agnostic: this flakiness occurs on macOS and Windows alike.
+    i=1
+    while (( i <= tries )); do
+        tag="${user//[^A-Za-z0-9_.-]/_}.$$.$RANDOM"
+        remote="/data/local/tmp/droidlens-$tag.xml"
+        if adb_retry --tries "${DROIDLENS_ADB_RETRIES:-3}" shell uiautomator dump "$remote" >/dev/null \
+            && adb_retry --tries "${DROIDLENS_ADB_RETRIES:-3}" exec-out cat "$remote" > "$out"; then
+            adb shell rm -f "$remote" >/dev/null 2>&1 || true
+            if [[ -s "$out" ]] && grep -q '<hierarchy' "$out" 2>/dev/null; then
+                return 0
+            fi
+        else
+            adb shell rm -f "$remote" >/dev/null 2>&1 || true
+        fi
+        if (( i < tries )); then sleep "${DROIDLENS_DUMP_RETRY_DELAY:-0.4}"; fi
+        i=$(( i + 1 ))
+    done
+    return 1
 }
 
 # Install hint for missing tool, per OS.
@@ -428,7 +477,7 @@ log()  { printf '[droidlens] %s\n' "$*" >&2; }
 die()  { printf '[droidlens] ERROR: %s\n' "$*" >&2; exit 1; }
 
 json_emit() {
-    python3 - "$@" <<'PY'
+    py - "$@" <<'PY'
 import json
 import sys
 
@@ -449,7 +498,7 @@ PY
 write_json_file() {
     local out="$1"
     shift
-    python3 - "$out" "$@" <<'PY'
+    py - "$out" "$@" <<'PY'
 import json
 import sys
 
@@ -484,7 +533,7 @@ failure_bundle() {
     xml="$dir/hierarchy.xml"
     if dump_xml "$xml" >"$dir/dump_xml.log" 2>&1; then
         if [[ "${DROIDLENS_REDACT_TEXT:-0}" != "1" && -x "$DROIDLENS_LIB_HERE/uixml.py" ]]; then
-            python3 "$DROIDLENS_LIB_HERE/uixml.py" summary "$xml" --width "$(wm_width)" --height "$(wm_height)" \
+            py "$DROIDLENS_LIB_HERE/uixml.py" summary "$xml" --width "$(wm_width)" --height "$(wm_height)" \
                 > "$dir/summary.json" 2>"$dir/summary.err" || true
         fi
     fi

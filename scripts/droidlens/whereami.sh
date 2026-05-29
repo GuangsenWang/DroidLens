@@ -36,7 +36,7 @@ TOP=$(( H / 4 ))   # top quarter of the screen
 
 # Heuristic: non-empty text within the top area, preferring the widest bounds.
 # XML example: text="Page title" bounds="[L,T][R,B]"
-TITLE="$(python3 - "$TMP" "$TOP" <<'PY'
+TITLE="$(py - "$TMP" "$TOP" <<'PY'
 import re, sys
 xml_path, top_y = sys.argv[1], int(sys.argv[2])
 src = open(xml_path, encoding="utf-8", errors="replace").read()
@@ -70,7 +70,7 @@ PY
 
 # Collect all visible text and content-desc values for fingerprint/Jaccard matching.
 # Output both the exact hash and the JSON text set used for similarity matching.
-read -r FP TEXTS_JSON < <(python3 - "$TMP" <<'PY'
+read -r FP TEXTS_JSON < <(py - "$TMP" <<'PY'
 import re, sys, hashlib, json
 src = open(sys.argv[1], encoding="utf-8", errors="replace").read()
 texts = set()
@@ -96,7 +96,7 @@ if [[ -s "$STORE" ]] && command -v python3 >/dev/null 2>&1; then
     #   1. Exact fingerprint match.
     #   2. Jaccard similarity >= 0.6 for list/content changes.
     #   3. Activity + inferred title heuristic.
-    PAGE_INFO="$(python3 - "$STORE" "$DK" "$FP" "$TITLE" "$ACT" "$TEXTS_JSON" <<'PY'
+    PAGE_INFO="$(py - "$STORE" "$DK" "$FP" "$TITLE" "$ACT" "$TEXTS_JSON" <<'PY'
 import json, sys
 store, bucket, fp, title, act, texts_json = sys.argv[1:7]
 try:

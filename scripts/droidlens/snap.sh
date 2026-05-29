@@ -89,7 +89,7 @@ if [[ "$ORIG" -lt 1000 ]]; then
 fi
 
 read_png_size() {
-    python3 - "$1" <<'PY'
+    py - "$1" <<'PY'
 import struct
 import sys
 
@@ -106,7 +106,7 @@ PY
 write_meta() {
     local image="$1" mode="$2" device_w="$3" device_h="$4" image_w="$5" image_h="$6" meta
     meta="${image%.*}.meta.json"
-    python3 - "$image" "$meta" "$mode" "$device_w" "$device_h" "$image_w" "$image_h" <<'PY'
+    py - "$image" "$meta" "$mode" "$device_w" "$device_h" "$image_w" "$image_h" <<'PY'
 import json
 import os
 import sys

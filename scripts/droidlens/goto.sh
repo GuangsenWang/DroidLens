@@ -164,7 +164,7 @@ snap_out() {
 
 mark_edge_stale() {
     local from="$1" via="$2" to="$3" reason="$4"
-    python3 "$HERE/pagetree.py" mark-edge "$STORE" "$BUCKET" "$from" "$via" "$to" stale "$reason" \
+    py "$HERE/pagetree.py" mark-edge "$STORE" "$BUCKET" "$from" "$via" "$to" stale "$reason" \
         >/dev/null 2>&1 || true
 }
 
@@ -232,7 +232,7 @@ if [[ "$CUR" == "$TARGET" ]]; then
 fi
 
 # 3) BFS route, excluding stale/disabled edges.
-ROUTE="$(python3 "$HERE/pagetree.py" route "$STORE" "$BUCKET" "$CUR" "$TARGET" || true)"
+ROUTE="$(py "$HERE/pagetree.py" route "$STORE" "$BUCKET" "$CUR" "$TARGET" || true)"
 if [[ -z "$ROUTE" ]]; then
     fail_goto "route_not_found" "no usable page-tree route from [$CUR] to [$TARGET]. Learn a route or repair stale edges."
 fi

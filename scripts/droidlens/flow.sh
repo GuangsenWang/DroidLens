@@ -50,7 +50,7 @@ FLOW_SNAP_MODE="${DROIDLENS_FLOW_SNAP_MODE:---thumb}"
 
 flow_event() {
     [[ "$JSONL" == "1" ]] || return 0
-    python3 - "$@" <<'PY'
+    py - "$@" <<'PY'
 import json
 import sys
 
@@ -68,7 +68,7 @@ PY
 flow_child_event() {
     [[ "$JSONL" == "1" ]] || return 0
     local event="$1" step="$2" child_json="$3"
-    python3 - "$event" "$step" "$child_json" <<'PY'
+    py - "$event" "$step" "$child_json" <<'PY'
 import json
 import sys
 
@@ -147,7 +147,7 @@ capture_after_action() {
     if [[ "$SUMMARY_EVERY_STEP" == "1" ]]; then
         xml="$OUT_DIR/$name.xml"
         dump_xml "$xml"
-        python3 "$HERE/uixml.py" summary "$xml" --width "$(wm_width)" --height "$(wm_height)" \
+        py "$HERE/uixml.py" summary "$xml" --width "$(wm_width)" --height "$(wm_height)" \
             > "$OUT_DIR/$name.summary.json"
         flow_artifact_event "$name" xml "$xml"
         flow_artifact_event "$name" summary "$OUT_DIR/$name.summary.json"
@@ -189,8 +189,8 @@ wait_text() {
     while (( $(date +%s) < end )); do
         xml="$(mktemp -t droidlens.XXXXXX.xml)"
         dump_xml "$xml" >/dev/null 2>&1
-        if python3 "$HERE/uixml.py" has "$xml" --by text --value "$q" \
-            || python3 "$HERE/uixml.py" has "$xml" --by desc --value "$q"; then
+        if py "$HERE/uixml.py" has "$xml" --by text --value "$q" \
+            || py "$HERE/uixml.py" has "$xml" --by desc --value "$q"; then
             rm -f "$xml"
             flow_event ok=true event=wait-text query="$q" timeout="$timeout" found=true
             return 0
@@ -206,7 +206,7 @@ wait_text() {
 split_args() {
     SPLIT_ARGS=()
     local parsed part
-    parsed="$(python3 "$HERE/uixml.py" split "$1")" || die "failed to parse DSL arguments: $1"
+    parsed="$(py "$HERE/uixml.py" split "$1")" || die "failed to parse DSL arguments: $1"
     while IFS= read -r part; do
         [[ -n "$part" ]] && SPLIT_ARGS+=("$part")
     done <<< "$parsed"

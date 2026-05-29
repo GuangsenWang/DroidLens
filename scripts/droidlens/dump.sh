@@ -64,13 +64,13 @@ case "$MODE" in
 esac
 if [[ "$JSON" == "1" ]]; then
     if ! SNAP_JSON="$("$HERE/snap.sh" "$STEM.$EXT" "$SNAP_MODE" --json)"; then
-        if python3 -c 'import json,sys; json.loads(sys.stdin.read())' <<< "$SNAP_JSON" 2>/dev/null; then
+        if py -c 'import json,sys; json.loads(sys.stdin.read())' <<< "$SNAP_JSON" 2>/dev/null; then
             printf '%s\n' "$SNAP_JSON"
             exit 1
         fi
         fail "screencap_failed" "snap failed"
     fi
-    python3 - "$STEM" "$EXT" "$STEM.xml" "$SNAP_JSON" <<'PY'
+    py - "$STEM" "$EXT" "$STEM.xml" "$SNAP_JSON" <<'PY'
 import json
 import sys
 

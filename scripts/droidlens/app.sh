@@ -101,7 +101,7 @@ emit_shell() {
 
 emit_json() {
     local pkg="$1" activity="$2" component="$3" source="$4"
-    python3 - "$pkg" "$activity" "$component" "$source" "$PROFILE" "$ROOT" <<'PY'
+    py - "$pkg" "$activity" "$component" "$source" "$PROFILE" "$ROOT" <<'PY'
 import json
 import sys
 
@@ -141,9 +141,9 @@ resolve_explicit() {
 select_auto() {
     local current_pkg candidates selected
     current_pkg="$(current_package 2>/dev/null || true)"
-    candidates="$(python3 "$HERE/app_resolver.py" --root "$ROOT" --profile "$PROFILE" --variant "$VARIANT")"
+    candidates="$(py "$HERE/app_resolver.py" --root "$ROOT" --profile "$PROFILE" --variant "$VARIANT")"
     selected="$(
-        python3 - "$candidates" "$current_pkg" <<'PY'
+        py - "$candidates" "$current_pkg" <<'PY'
 import json
 import sys
 
@@ -169,10 +169,10 @@ PY
     fi
 
     local pkg activity component source
-    pkg="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1]).get("package",""))' "$selected")"
-    activity="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1]).get("activity",""))' "$selected")"
-    component="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1]).get("component",""))' "$selected")"
-    source="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1]).get("source",""))' "$selected")"
+    pkg="$(py -c 'import json,sys; print(json.loads(sys.argv[1]).get("package",""))' "$selected")"
+    activity="$(py -c 'import json,sys; print(json.loads(sys.argv[1]).get("activity",""))' "$selected")"
+    component="$(py -c 'import json,sys; print(json.loads(sys.argv[1]).get("component",""))' "$selected")"
+    source="$(py -c 'import json,sys; print(json.loads(sys.argv[1]).get("source",""))' "$selected")"
 
     if ! is_installed_pkg "$pkg"; then
         if [[ "$source" == profile:* ]]; then
@@ -181,7 +181,7 @@ PY
         # Gradle may list multiple flavors; pick the single installed candidate if possible.
         local installed
         installed="$(
-            python3 - "$candidates" <<'PY'
+            py - "$candidates" <<'PY'
 import json
 import sys
 

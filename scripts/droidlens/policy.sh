@@ -78,7 +78,7 @@ run_policy_py() {
     while IFS= read -r -d '' arg; do
         args+=("$arg")
     done < <(base_args)
-    python3 "$HERE/policy.py" "$CMD" "${args[@]}" "$@"
+    py "$HERE/policy.py" "$CMD" "${args[@]}" "$@"
 }
 
 while [[ $# -gt 0 ]]; do

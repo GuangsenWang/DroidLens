@@ -28,4 +28,4 @@ fi
 W="$(wm_width)"
 H="$(wm_height)"
 
-python3 "$HERE/uixml.py" summary "$XML" --width "$W" --height "$H"
+py "$HERE/uixml.py" summary "$XML" --width "$W" --height "$H"
